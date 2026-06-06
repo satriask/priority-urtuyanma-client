@@ -18,7 +18,6 @@ export default function Auth() {
 
     try {
       setLoading(true);
-      console.log(process.env.NEXT_PUBLIC_URL_LINK);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_URL_LINK}Auth`, {
         method: "POST",
