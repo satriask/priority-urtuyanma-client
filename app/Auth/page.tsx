@@ -37,7 +37,7 @@ export default function Auth() {
 
       toast.success("Login berhasil");
 
-      router.push("/");
+      router.push("/Dashboard");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
