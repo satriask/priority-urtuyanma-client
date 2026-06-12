@@ -72,15 +72,203 @@ export default function DaftarSurat() {
     },
   ];
 
+  const handleCreateSurat = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const form = e.currentTarget;
+
+      const formData = new FormData(form);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_LINK}create-surat`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          body: formData,
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal membuat surat");
+      }
+
+      alert("Surat berhasil dibuat");
+
+      form.reset();
+
+      (
+        document.getElementById(
+          "modal_tambah_surat",
+        ) as HTMLDialogElement | null
+      )?.close();
+
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
+    }
+  };
+
   return (
     <div className="flex-1 p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Daftar Surat Masuk</h1>
 
-        <button className="bg-[#C2B280] px-4 py-2 rounded-lg font-medium hover:opacity-90">
+        <button
+          className="bg-[#C2B280] px-4 py-2 rounded-lg font-medium hover:opacity-90"
+          onClick={() =>
+            (
+              document.getElementById(
+                "modal_tambah_surat",
+              ) as HTMLDialogElement | null
+            )?.showModal()
+          }
+        >
           + Tambah Surat
         </button>
+
+        <dialog id="modal_tambah_surat" className="modal">
+          <div className="modal-box max-w-2xl">
+            <form onSubmit={handleCreateSurat}>
+              <h3 className="font-bold text-lg mb-4">Tambah Surat</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  name="judulSurat"
+                  type="text"
+                  placeholder="Judul Surat"
+                  className="input input-bordered w-full"
+                />
+
+                <input
+                  name="nomorSurat"
+                  type="text"
+                  placeholder="Nomor Surat"
+                  className="input input-bordered w-full"
+                />
+
+                <input
+                  name="tanggalSurat"
+                  type="date"
+                  className="input input-bordered w-full"
+                />
+
+                {/* C1 */}
+                <select
+                  name="C1"
+                  className="select select-bordered w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    C1 - Tingkat Urgensi
+                  </option>
+                  <option value="5">Sangat Mendesak</option>
+                  <option value="4">Mendesak</option>
+                  <option value="3">Cukup Mendesak</option>
+                  <option value="2">Kurang Mendesak</option>
+                  <option value="1">Tidak Mendesak</option>
+                </select>
+
+                {/* C2 */}
+                <select
+                  name="C2"
+                  className="select select-bordered w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    C2 - Tingkat Kepentingan
+                  </option>
+                  <option value="5">Sangat Penting</option>
+                  <option value="4">Penting</option>
+                  <option value="3">Cukup Penting</option>
+                  <option value="2">Kurang Penting</option>
+                  <option value="1">Tidak Penting</option>
+                </select>
+
+                {/* C3 */}
+                <select
+                  name="C3"
+                  className="select select-bordered w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    C3 - Batas Waktu
+                  </option>
+                  <option value="5">≤ 1 Hari</option>
+                  <option value="4">2–3 Hari</option>
+                  <option value="3">4–7 Hari</option>
+                  <option value="2">8–14 Hari</option>
+                  <option value="1">&gt; 14 Hari</option>
+                </select>
+
+                {/* C4 */}
+                <select
+                  name="C4"
+                  className="select select-bordered w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    C4 - Pengirim
+                  </option>
+                  <option value="5">Mabes Polri</option>
+                  <option value="4">Polda Metro Jaya</option>
+                  <option value="3">Instansi Pemerintah</option>
+                  <option value="2">Satuan Kerja Internal</option>
+                  <option value="1">Masyarakat / Perorangan</option>
+                </select>
+
+                {/* C5 */}
+                <select
+                  name="C5"
+                  className="select select-bordered w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    C5 - Dampak Keterlambatan
+                  </option>
+                  <option value="5">Sangat Besar</option>
+                  <option value="4">Besar</option>
+                  <option value="3">Sedang</option>
+                  <option value="2">Kecil</option>
+                  <option value="1">Sangat Kecil</option>
+                </select>
+              </div>
+
+              {/* Upload Surat */}
+              <div className="mt-4">
+                <label className="label">
+                  <span className="label-text">Upload Gambar Surat</span>
+                </label>
+
+                <input
+                  name="surat"
+                  type="file"
+                  accept="image/*"
+                  className="file-input file-input-bordered w-full"
+                />
+              </div>
+
+              <div className="modal-action">
+                <button className="btn btn-primary">Simpan</button>
+              </div>
+            </form>
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn">Batal</button>
+              </form>
+            </div>
+          </div>
+
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </div>
 
       {/* Keterangan */}
