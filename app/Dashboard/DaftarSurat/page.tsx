@@ -1,76 +1,72 @@
 "use client";
+import { useEffect, useState } from "react";
 
 export default function DaftarSurat() {
-  const arsip = [
-    {
-      id: 1,
-      nomor: "B/001/VI/2026",
-      pengirim: "Mabes Polri",
-      tanggalMasuk: "01-06-2026",
+  // const arsip = [
+  //   // {
+  //   //   id: 1,
+  //   //   nomor: "B/001/VI/2026",
+  //   //   pengirim: "Mabes Polri",
+  //   //   tanggalMasuk: "01-06-2026",
+  //   //   c1: 5,
+  //   //   c2: 5,
+  //   //   c3: 5,
+  //   //   c4: 5,
+  //   //   c5: 5,
+  //   //   skorMoora: 0.92,
+  //   //   ranking: 1,
+  //   //   status: "Belum Ditindaklanjuti",
+  //   // },
+  //   // {
+  //   //   id: 2,
+  //   //   nomor: "B/002/VI/2026",
+  //   //   pengirim: "Polda Metro Jaya",
+  //   //   tanggalMasuk: "02-06-2026",
+  //   //   c1: 4,
+  //   //   c2: 5,
+  //   //   c3: 4,
+  //   //   c4: 4,
+  //   //   c5: 5,
+  //   //   skorMoora: 0.89,
+  //   //   ranking: 2,
+  //   //   status: "Diproses",
+  //   // },
+  //   // {
+  //   //   id: 3,
+  //   //   nomor: "B/003/VI/2026",
+  //   //   pengirim: "Instansi Pemerintah",
+  //   //   tanggalMasuk: "03-06-2026",
+  //   //   c1: 4,
+  //   //   c2: 4,
+  //   //   c3: 3,
+  //   //   c4: 3,
+  //   //   c5: 4,
+  //   //   skorMoora: 0.81,
+  //   //   ranking: 3,
+  //   //   status: "Diproses",
+  //   // },
+  //   // {
+  //   //   id: 4,
+  //   //   nomor: "B/004/VI/2026",
+  //   //   pengirim: "Satker Internal",
+  //   //   tanggalMasuk: "04-06-2026",
+  //   //   c1: 3,
+  //   //   c2: 3,
+  //   //   c3: 3,
+  //   //   c4: 2,
+  //   //   c5: 3,
+  //   //   skorMoora: 0.69,
+  //   //   ranking: 4,
+  //   //   status: "Selesai",
+  //   // },
+  // ];
 
-      c1: 5,
-      c2: 5,
-      c3: 5,
-      c4: 5,
-      c5: 5,
+  const [arsip, setArsip] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-      skorMoora: 0.92,
-      ranking: 1,
-
-      status: "Belum Ditindaklanjuti",
-    },
-    {
-      id: 2,
-      nomor: "B/002/VI/2026",
-      pengirim: "Polda Metro Jaya",
-      tanggalMasuk: "02-06-2026",
-
-      c1: 4,
-      c2: 5,
-      c3: 4,
-      c4: 4,
-      c5: 5,
-
-      skorMoora: 0.89,
-      ranking: 2,
-
-      status: "Diproses",
-    },
-    {
-      id: 3,
-      nomor: "B/003/VI/2026",
-      pengirim: "Instansi Pemerintah",
-      tanggalMasuk: "03-06-2026",
-
-      c1: 4,
-      c2: 4,
-      c3: 3,
-      c4: 3,
-      c5: 4,
-
-      skorMoora: 0.81,
-      ranking: 3,
-
-      status: "Diproses",
-    },
-    {
-      id: 4,
-      nomor: "B/004/VI/2026",
-      pengirim: "Satker Internal",
-      tanggalMasuk: "04-06-2026",
-
-      c1: 3,
-      c2: 3,
-      c3: 3,
-      c4: 2,
-      c5: 3,
-
-      skorMoora: 0.69,
-      ranking: 4,
-
-      status: "Selesai",
-    },
-  ];
+  useEffect(() => {
+    fetchDataSurat();
+  }, []);
 
   const handleCreateSurat = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,6 +107,82 @@ export default function DaftarSurat() {
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : "Terjadi kesalahan");
+    }
+  };
+
+  const getPengirim = (c4: number) => {
+    switch (c4) {
+      case 1:
+        return "Masyarakat / Perorangan";
+      case 2:
+        return "Satuan Kerja Internal";
+      case 3:
+        return "Instansi Pemerintah";
+      case 4:
+        return "Polda Metro Jaya";
+      case 5:
+        return "Mabes Polri";
+      default:
+        return "-";
+    }
+  };
+
+  const fetchDataSurat = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_LINK}get-surat`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message);
+      }
+
+      console.log(result.data);
+
+      setArsip(result.data);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Gagal mengambil data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusSurat = (status: string | number) => {
+    switch (String(status)) {
+      case "1":
+        return {
+          label: "Belum Diproses",
+          className: "bg-red-100 text-red-700",
+        };
+
+      case "2":
+        return {
+          label: "Sedang Diproses",
+          className: "bg-blue-100 text-blue-700",
+        };
+
+      case "3":
+        return {
+          label: "Sudah Diproses",
+          className: "bg-green-100 text-green-700",
+        };
+
+      default:
+        return {
+          label: "-",
+          className: "bg-gray-100 text-gray-700",
+        };
     }
   };
 
@@ -368,7 +440,7 @@ export default function DaftarSurat() {
 
                 <th className="p-3 text-center">Ranking</th>
 
-                <th className="p-3 text-center">Status</th>
+                <th className="p-3 w-36 text-center">Status</th>
 
                 <th className="p-3 text-center">Aksi</th>
               </tr>
@@ -379,23 +451,23 @@ export default function DaftarSurat() {
                 <tr key={item.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{index + 1}</td>
 
-                  <td className="p-3 font-medium">{item.nomor}</td>
+                  <td className="p-3 font-medium">{item.nomorSurat}</td>
 
-                  <td className="p-3">{item.pengirim}</td>
+                  <td className="p-3">{getPengirim(item.C4)}</td>
 
-                  <td className="p-3 text-center">{item.c1}</td>
+                  <td className="p-3 text-center">{item.C1}</td>
 
-                  <td className="p-3 text-center">{item.c2}</td>
+                  <td className="p-3 text-center">{item.C2}</td>
 
-                  <td className="p-3 text-center">{item.c3}</td>
+                  <td className="p-3 text-center">{item.C3}</td>
 
-                  <td className="p-3 text-center">{item.c4}</td>
+                  <td className="p-3 text-center">{item.C4}</td>
 
-                  <td className="p-3 text-center">{item.c5}</td>
+                  <td className="p-3 text-center">{item.C5}</td>
 
                   <td className="p-3 text-center">
                     <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                      {item.skorMoora}
+                      {item.skor}
                     </span>
                   </td>
 
@@ -406,17 +478,17 @@ export default function DaftarSurat() {
                   </td>
 
                   <td className="p-3 text-center">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        item.status === "Belum Ditindaklanjuti"
-                          ? "bg-red-100 text-red-700"
-                          : item.status === "Diproses"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
+                    {(() => {
+                      const status = getStatusSurat(item.statusSurat);
+
+                      return (
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${status.className}`}
+                        >
+                          {status.label}
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   <td className="p-3">
