@@ -1,66 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function DaftarSurat() {
-  // const arsip = [
-  //   // {
-  //   //   id: 1,
-  //   //   nomor: "B/001/VI/2026",
-  //   //   pengirim: "Mabes Polri",
-  //   //   tanggalMasuk: "01-06-2026",
-  //   //   c1: 5,
-  //   //   c2: 5,
-  //   //   c3: 5,
-  //   //   c4: 5,
-  //   //   c5: 5,
-  //   //   skorMoora: 0.92,
-  //   //   ranking: 1,
-  //   //   status: "Belum Ditindaklanjuti",
-  //   // },
-  //   // {
-  //   //   id: 2,
-  //   //   nomor: "B/002/VI/2026",
-  //   //   pengirim: "Polda Metro Jaya",
-  //   //   tanggalMasuk: "02-06-2026",
-  //   //   c1: 4,
-  //   //   c2: 5,
-  //   //   c3: 4,
-  //   //   c4: 4,
-  //   //   c5: 5,
-  //   //   skorMoora: 0.89,
-  //   //   ranking: 2,
-  //   //   status: "Diproses",
-  //   // },
-  //   // {
-  //   //   id: 3,
-  //   //   nomor: "B/003/VI/2026",
-  //   //   pengirim: "Instansi Pemerintah",
-  //   //   tanggalMasuk: "03-06-2026",
-  //   //   c1: 4,
-  //   //   c2: 4,
-  //   //   c3: 3,
-  //   //   c4: 3,
-  //   //   c5: 4,
-  //   //   skorMoora: 0.81,
-  //   //   ranking: 3,
-  //   //   status: "Diproses",
-  //   // },
-  //   // {
-  //   //   id: 4,
-  //   //   nomor: "B/004/VI/2026",
-  //   //   pengirim: "Satker Internal",
-  //   //   tanggalMasuk: "04-06-2026",
-  //   //   c1: 3,
-  //   //   c2: 3,
-  //   //   c3: 3,
-  //   //   c4: 2,
-  //   //   c5: 3,
-  //   //   skorMoora: 0.69,
-  //   //   ranking: 4,
-  //   //   status: "Selesai",
-  //   // },
-  // ];
+  const [searchNomor, setSearchNomor] = useState("");
+  const [searchPengirim, setSearchPengirim] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
+  const [selectedSurat, setSelectedSurat] = useState<any>(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
+  const itemPerPage = 5;
   const [arsip, setArsip] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -110,6 +59,63 @@ export default function DaftarSurat() {
     }
   };
 
+  const handleUpdateStatus = async () => {
+    if (!selectedSurat) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_LINK}edit-status-surat/${selectedSurat.SuratId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            statusSurat: selectedStatus,
+          }),
+        },
+      );
+
+      console.log("response");
+      console.log(response);
+      console.log("response");
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message);
+      }
+
+      alert("Status berhasil diubah");
+
+      (
+        document.getElementById("modal_detail_surat") as HTMLDialogElement
+      )?.close();
+
+      fetchDataSurat();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengubah status");
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "1":
+        return <span className="badge badge-warning">Belum Diproses</span>;
+
+      case "2":
+        return <span className="badge badge-info">Dalam Proses</span>;
+
+      case "3":
+        return <span className="badge badge-success">Sudah Diproses</span>;
+
+      default:
+        return <span className="badge">Tidak diketahui</span>;
+    }
+  };
+
   const getPengirim = (c4: number) => {
     switch (c4) {
       case 1:
@@ -127,6 +133,31 @@ export default function DaftarSurat() {
     }
   };
 
+  const filteredArsip = useMemo(() => {
+    return arsip.filter((item) => {
+      const nomorMatch =
+        !searchNomor ||
+        item.nomorSurat
+          ?.toString()
+          .toLowerCase()
+          .includes(searchNomor.toLowerCase());
+
+      const pengirimMatch =
+        !searchPengirim || String(item.C4) === String(searchPengirim);
+
+      const statusMatch =
+        !searchStatus || String(item.statusSurat) === String(searchStatus);
+
+      return nomorMatch && pengirimMatch && statusMatch;
+    });
+  }, [arsip, searchNomor, searchPengirim, searchStatus]);
+
+  const totalPage = Math.ceil(filteredArsip.length / itemPerPage);
+
+  const paginatedArsip = filteredArsip.slice(
+    (currentPage - 1) * itemPerPage,
+    currentPage * itemPerPage,
+  );
   const fetchDataSurat = async () => {
     try {
       setLoading(true);
@@ -151,7 +182,6 @@ export default function DaftarSurat() {
 
       setArsip(result.data);
     } catch (err) {
-      console.error(err);
       alert(err instanceof Error ? err.message : "Gagal mengambil data");
     } finally {
       setLoading(false);
@@ -183,6 +213,75 @@ export default function DaftarSurat() {
           label: "-",
           className: "bg-gray-100 text-gray-700",
         };
+    }
+  };
+
+  const deleteSurat = async (id: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_LINK}delete-surat/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+      console.log(result);
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menghapus surat");
+      }
+      alert(result.message);
+      fetchDataSurat();
+    } catch (error) {
+      console.error(error);
+
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan");
+    }
+  };
+
+  const handleEditSurat = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!selectedSurat) return;
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_LINK}edit-surat/${selectedSurat.SuratId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          body: formData,
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal mengubah surat");
+      }
+
+      alert(result.message || "Surat berhasil diubah");
+
+      (
+        document.getElementById("modal_edit_surat") as HTMLDialogElement | null
+      )?.close();
+
+      fetchDataSurat(); // refresh data
+
+      // optional: reset selected surat
+      setSelectedSurat(null);
+    } catch (error) {
+      console.error(error);
+
+      alert(error instanceof Error ? error.message : "Gagal mengubah surat");
     }
   };
 
@@ -379,15 +478,27 @@ export default function DaftarSurat() {
             type="text"
             placeholder="Nomor Surat"
             className="border rounded-lg px-3 py-2"
+            value={searchNomor}
+            onChange={(e) => {
+              setSearchNomor(e.target.value);
+              setCurrentPage(1);
+            }}
           />
 
-          <select className="border rounded-lg px-3 py-2">
-            <option>Semua Pengirim</option>
-            <option>Mabes Polri</option>
-            <option>Polda Metro Jaya</option>
-            <option>Instansi Pemerintah</option>
-            <option>Satker Internal</option>
-            <option>Masyarakat</option>
+          <select
+            className="border rounded-lg px-3 py-2"
+            value={searchPengirim}
+            onChange={(e) => {
+              setSearchPengirim(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="">Semua Pengirim</option>
+            <option value="5">Mabes Polri</option>
+            <option value="4">Polda Metro Jaya</option>
+            <option value="3">Instansi Pemerintah</option>
+            <option value="2">Satker Internal</option>
+            <option value="1">Masyarakat</option>
           </select>
 
           <select className="border rounded-lg px-3 py-2">
@@ -403,18 +514,38 @@ export default function DaftarSurat() {
 
           <input type="date" className="border rounded-lg px-3 py-2" />
 
-          <select className="border rounded-lg px-3 py-2">
-            <option>Semua Status</option>
-            <option>Belum Ditindaklanjuti</option>
-            <option>Diproses</option>
-            <option>Selesai</option>
+          <select
+            className="border rounded-lg px-3 py-2"
+            value={searchStatus}
+            onChange={(e) => {
+              setSearchStatus(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="">Semua Status</option>
+            <option value="1">Belum Diproses</option>
+            <option value="2">Sedang Diproses</option>
+            <option value="3">Sudah Diproses</option>
           </select>
         </div>
 
         <div className="flex gap-3 mt-4">
-          <button className="bg-[#C2B280] px-4 py-2 rounded-lg">Cari</button>
+          <button type="button" className="bg-[#C2B280] px-4 py-2 rounded-lg">
+            Cari
+          </button>
 
-          <button className="border px-4 py-2 rounded-lg">Reset</button>
+          <button
+            type="button"
+            className="border px-4 py-2 rounded-lg"
+            onClick={() => {
+              setSearchNomor("");
+              setSearchPengirim("");
+              setSearchStatus("");
+              setCurrentPage(1);
+            }}
+          >
+            Reset
+          </button>
         </div>
       </div>
 
@@ -447,81 +578,379 @@ export default function DaftarSurat() {
             </thead>
 
             <tbody>
-              {arsip.map((item, index) => (
-                <tr key={item.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3">{index + 1}</td>
-
-                  <td className="p-3 font-medium">{item.nomorSurat}</td>
-
-                  <td className="p-3">{getPengirim(item.C4)}</td>
-
-                  <td className="p-3 text-center">{item.C1}</td>
-
-                  <td className="p-3 text-center">{item.C2}</td>
-
-                  <td className="p-3 text-center">{item.C3}</td>
-
-                  <td className="p-3 text-center">{item.C4}</td>
-
-                  <td className="p-3 text-center">{item.C5}</td>
-
-                  <td className="p-3 text-center">
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                      {item.skor}
-                    </span>
-                  </td>
-
-                  <td className="p-3 text-center">
-                    <span className="font-bold text-[#C2B280]">
-                      #{item.ranking}
-                    </span>
-                  </td>
-
-                  <td className="p-3 text-center">
-                    {(() => {
-                      const status = getStatusSurat(item.statusSurat);
-
-                      return (
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${status.className}`}
-                        >
-                          {status.label}
-                        </span>
-                      );
-                    })()}
-                  </td>
-
-                  <td className="p-3">
-                    <div className="flex justify-center gap-2">
-                      <button className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">
-                        Detail
-                      </button>
-
-                      <button className="px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
-                        Edit
-                      </button>
-
-                      <button className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200">
-                        Hapus
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={12} className="text-center py-10">
+                    <span className="loading loading-spinner loading-lg"></span>
                   </td>
                 </tr>
-              ))}
+              ) : paginatedArsip.length === 0 ? (
+                <tr>
+                  <td colSpan={12} className="text-center py-10 text-gray-500">
+                    Data tidak ditemukan
+                  </td>
+                </tr>
+              ) : (
+                paginatedArsip.map((item, index) => (
+                  <tr key={item.id} className="border-t hover:bg-gray-50">
+                    <td className="p-3">{index + 1}</td>
+
+                    <td className="p-3 font-medium">{item.nomorSurat}</td>
+
+                    <td className="p-3">{getPengirim(item.C4)}</td>
+
+                    <td className="p-3 text-center">{item.C1}</td>
+
+                    <td className="p-3 text-center">{item.C2}</td>
+
+                    <td className="p-3 text-center">{item.C3}</td>
+
+                    <td className="p-3 text-center">{item.C4}</td>
+
+                    <td className="p-3 text-center">{item.C5}</td>
+
+                    <td className="p-3 text-center">
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                        {item.skor}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <span className="font-bold text-[#C2B280]">
+                        #{item.ranking}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      {(() => {
+                        const status = getStatusSurat(item.statusSurat);
+
+                        return (
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${status.className}`}
+                          >
+                            {status.label}
+                          </span>
+                        );
+                      })()}
+                    </td>
+
+                    <td className="p-3">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200"
+                          onClick={() => {
+                            setSelectedSurat(item);
+                            setSelectedStatus(item.statusSurat);
+
+                            (
+                              document.getElementById(
+                                "modal_detail_surat",
+                              ) as HTMLDialogElement
+                            )?.showModal();
+                          }}
+                        >
+                          Detail
+                        </button>
+                        <dialog id="modal_detail_surat" className="modal">
+                          <div className="modal-box max-w-5xl">
+                            <h3 className="font-bold text-2xl mb-6">
+                              Detail Surat
+                            </h3>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                              {/* GAMBAR */}
+                              <div>
+                                <img
+                                  src={selectedSurat?.fileSurat}
+                                  alt="Surat"
+                                  className="rounded-lg border w-full object-cover"
+                                />
+                              </div>
+
+                              {/* DETAIL */}
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="font-semibold">Judul Surat</p>
+                                  <p>{selectedSurat?.judulSurat}</p>
+                                </div>
+
+                                <div>
+                                  <p className="font-semibold">Nomor Surat</p>
+                                  <p>{selectedSurat?.nomorSurat}</p>
+                                </div>
+
+                                <div>
+                                  <p className="font-semibold">Tanggal Surat</p>
+                                  <p>
+                                    {selectedSurat?.tanggalSurat?.split("T")[0]}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <p className="font-semibold">
+                                    Status Saat Ini
+                                  </p>
+
+                                  {getStatusBadge(selectedSurat?.statusSurat)}
+                                </div>
+
+                                <hr />
+
+                                <div>
+                                  <p className="font-semibold mb-2">
+                                    Nilai Kriteria
+                                  </p>
+
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div>C1 : {selectedSurat?.C1}</div>
+                                    <div>C2 : {selectedSurat?.C2}</div>
+                                    <div>C3 : {selectedSurat?.C3}</div>
+                                    <div>C4 : {selectedSurat?.C4}</div>
+                                    <div>C5 : {selectedSurat?.C5}</div>
+
+                                    <div>
+                                      Ranking : {selectedSurat?.ranking}
+                                    </div>
+
+                                    {/* <div>Skor : {selectedSurat?.skor}</div> */}
+                                  </div>
+                                </div>
+
+                                <hr />
+
+                                <div>
+                                  <label className="font-semibold">
+                                    Ubah Status
+                                  </label>
+
+                                  <select
+                                    className="select select-bordered w-full mt-2"
+                                    value={selectedStatus}
+                                    onChange={(e) =>
+                                      setSelectedStatus(e.target.value)
+                                    }
+                                  >
+                                    <option value="1">Belum Diproses</option>
+
+                                    <option value="2">Dalam Proses</option>
+
+                                    <option value="3">Sudah Diproses</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="modal-action">
+                              <button
+                                className="btn btn-primary"
+                                onClick={handleUpdateStatus}
+                              >
+                                Simpan Status
+                              </button>
+
+                              <form method="dialog">
+                                <button className="btn">Tutup</button>
+                              </form>
+                            </div>
+                          </div>
+
+                          <form method="dialog" className="modal-backdrop">
+                            <button>close</button>
+                          </form>
+                        </dialog>
+                        <button
+                          className="px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          onClick={() => {
+                            setSelectedSurat(item);
+
+                            (
+                              document.getElementById(
+                                "modal_edit_surat",
+                              ) as HTMLDialogElement | null
+                            )?.showModal();
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <dialog id="modal_edit_surat" className="modal">
+                          <div className="modal-box max-w-2xl">
+                            <form onSubmit={handleEditSurat}>
+                              <h3 className="font-bold text-lg mb-4">
+                                Edit Surat
+                              </h3>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                  name="judulSurat"
+                                  type="text"
+                                  className="input input-bordered w-full"
+                                  defaultValue={selectedSurat?.judulSurat}
+                                />
+
+                                <input
+                                  name="nomorSurat"
+                                  type="text"
+                                  className="input input-bordered w-full"
+                                  defaultValue={selectedSurat?.nomorSurat}
+                                />
+
+                                <input
+                                  name="tanggalSurat"
+                                  type="date"
+                                  className="input input-bordered w-full"
+                                  defaultValue={
+                                    selectedSurat?.tanggalSurat?.split("T")[0]
+                                  }
+                                />
+
+                                <select
+                                  name="C1"
+                                  className="select select-bordered w-full"
+                                  defaultValue={selectedSurat?.C1}
+                                >
+                                  <option value="5">Sangat Mendesak</option>
+                                  <option value="4">Mendesak</option>
+                                  <option value="3">Cukup Mendesak</option>
+                                  <option value="2">Kurang Mendesak</option>
+                                  <option value="1">Tidak Mendesak</option>
+                                </select>
+
+                                <select
+                                  name="C2"
+                                  className="select select-bordered w-full"
+                                  defaultValue={selectedSurat?.C2}
+                                >
+                                  <option value="5">Sangat Penting</option>
+                                  <option value="4">Penting</option>
+                                  <option value="3">Cukup Penting</option>
+                                  <option value="2">Kurang Penting</option>
+                                  <option value="1">Tidak Penting</option>
+                                </select>
+
+                                <select
+                                  name="C3"
+                                  className="select select-bordered w-full"
+                                  defaultValue={selectedSurat?.C3}
+                                >
+                                  <option value="5">≤ 1 Hari</option>
+                                  <option value="4">2–3 Hari</option>
+                                  <option value="3">4–7 Hari</option>
+                                  <option value="2">8–14 Hari</option>
+                                  <option value="1">&gt;14 Hari</option>
+                                </select>
+
+                                <select
+                                  name="C4"
+                                  className="select select-bordered w-full"
+                                  defaultValue={selectedSurat?.C4}
+                                >
+                                  <option value="5">Mabes Polri</option>
+                                  <option value="4">Polda Metro Jaya</option>
+                                  <option value="3">Instansi Pemerintah</option>
+                                  <option value="2">
+                                    Satuan Kerja Internal
+                                  </option>
+                                  <option value="1">
+                                    Masyarakat / Perorangan
+                                  </option>
+                                </select>
+
+                                <select
+                                  name="C5"
+                                  className="select select-bordered w-full"
+                                  defaultValue={selectedSurat?.C5}
+                                >
+                                  <option value="5">Sangat Besar</option>
+                                  <option value="4">Besar</option>
+                                  <option value="3">Sedang</option>
+                                  <option value="2">Kecil</option>
+                                  <option value="1">Sangat Kecil</option>
+                                </select>
+                              </div>
+
+                              <div className="mt-4">
+                                <label className="label">
+                                  <span className="label-text">
+                                    Upload Surat Baru (Opsional)
+                                  </span>
+                                </label>
+
+                                <input
+                                  name="surat"
+                                  type="file"
+                                  accept="image/*"
+                                  className="file-input file-input-bordered w-full"
+                                />
+                              </div>
+
+                              <div className="modal-action">
+                                <button className="btn btn-primary">
+                                  Simpan Perubahan
+                                </button>
+                              </div>
+                            </form>
+
+                            <div className="modal-action">
+                              <form method="dialog">
+                                <button className="btn">Batal</button>
+                              </form>
+                            </div>
+                          </div>
+
+                          <form method="dialog" className="modal-backdrop">
+                            <button>close</button>
+                          </form>
+                        </dialog>
+
+                        <button
+                          onClick={() => deleteSurat(item.id)}
+                          className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-5">
-          <p className="text-sm text-gray-500">Menampilkan 1 - 4 dari 4 data</p>
+          <p className="text-sm text-gray-500">
+            Menampilkan{" "}
+            {filteredArsip.length === 0
+              ? 0
+              : (currentPage - 1) * itemPerPage + 1}
+            {" - "}
+            {Math.min(currentPage * itemPerPage, filteredArsip.length)}
+            {" dari "}
+            {filteredArsip.length} data
+          </p>
 
           <div className="flex gap-2">
-            <button className="border px-3 py-1 rounded">Prev</button>
+            <button
+              className="border px-3 py-1 rounded disabled:opacity-50"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              Prev
+            </button>
 
-            <button className="bg-[#C2B280] px-3 py-1 rounded">1</button>
+            <span className="bg-[#C2B280] px-3 py-1 rounded">
+              {currentPage}
+            </span>
 
-            <button className="border px-3 py-1 rounded">Next</button>
+            <button
+              className="border px-3 py-1 rounded disabled:opacity-50"
+              disabled={currentPage === totalPage || totalPage === 0}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

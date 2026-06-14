@@ -29,7 +29,7 @@ export default function Sidebar() {
           </button>
         </li>
 
-        <li>
+        {/* <li>
           <button
             onClick={() => {
               router.push("/Dashboard/Statistik");
@@ -38,7 +38,7 @@ export default function Sidebar() {
           >
             Statistik
           </button>
-        </li>
+        </li> */}
       </ul>
     </aside>
   );
