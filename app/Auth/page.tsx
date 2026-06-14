@@ -52,6 +52,19 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-[#F8F4E3] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-[#C2B280]">
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <img
+            src="/polri.png"
+            alt="POLRI"
+            className="h-14 w-14 object-contain"
+          />
+
+          <img
+            src="/urtuyanma.png"
+            alt="URTUYANMA"
+            className="h-14 w-14 object-contain"
+          />
+        </div>
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-black">Manajemen Arsip</h1>
 
