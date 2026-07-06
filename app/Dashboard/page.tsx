@@ -55,7 +55,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 p-6 min-h-screen">
+    <div className="flex-1 p-6 min-h-screen text-black">
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
       {/* SUMMARY */}

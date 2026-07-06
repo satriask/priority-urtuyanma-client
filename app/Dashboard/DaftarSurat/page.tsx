@@ -286,7 +286,7 @@ export default function DaftarSurat() {
   };
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 p-6 text-black">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Daftar Surat Masuk</h1>

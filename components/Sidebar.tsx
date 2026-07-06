@@ -12,7 +12,7 @@ export default function Sidebar() {
             onClick={() => {
               router.push("/Dashboard");
             }}
-            className="w-full text-left px-4 py-3 rounded-lg hover:bg-white  font-medium"
+            className="w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:text-black  font-medium"
           >
             Dashboard
           </button>
@@ -23,7 +23,7 @@ export default function Sidebar() {
             onClick={() => {
               router.push("/Dashboard/DaftarSurat");
             }}
-            className="w-full text-left px-4 py-3 rounded-lg hover:bg-white"
+            className="w-full text-left px-4 py-3 rounded-lg hover:text-black~ hover:bg-white"
           >
             Daftar Surat
           </button>
