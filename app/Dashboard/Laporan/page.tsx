@@ -12,6 +12,14 @@ interface Laporan {
   status: string;
 }
 
+interface Laporan2 {
+  id: number;
+  nomorSurat: string;
+  pengirim: string;
+  tanggalInput: string;
+  status: string;
+}
+
 const getNamaBulan = (bulan: string | number): string => {
   const daftarBulan = [
     "Januari",
