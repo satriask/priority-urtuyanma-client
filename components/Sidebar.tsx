@@ -29,16 +29,16 @@ export default function Sidebar() {
           </button>
         </li>
 
-        {/* <li>
+        <li>
           <button
             onClick={() => {
-              router.push("/Dashboard/Statistik");
+              router.push("/Dashboard/Laporan");
             }}
             className="w-full text-left px-4 py-3 rounded-lg hover:bg-white"
           >
-            Statistik
+            Laporan
           </button>
-        </li> */}
+        </li>
       </ul>
     </aside>
   );
