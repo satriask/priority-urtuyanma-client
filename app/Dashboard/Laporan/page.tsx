@@ -12,7 +12,7 @@ interface Laporan {
   status: string;
 }
 
-interface Laporan2 {
+interface Laporan3 {
   id: number;
   nomorSurat: string;
   pengirim: string;
