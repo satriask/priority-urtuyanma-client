@@ -396,9 +396,9 @@ export default function LaporanPage() {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3">No</th>
-              <th className="p-3 text-left">Nomor Surat</th>
-              <th className="p-3 text-left">Pengirim</th>
-              <th className="p-3 text-left">Judul</th>
+              <th className="p-3 ">Nomor Surat</th>
+              <th className="p-3 ">Pengirim</th>
+              <th className="p-3 ">Judul</th>
               <th className="p-3">Tanggal Input</th>
               <th className="p-3">Status</th>
             </tr>
