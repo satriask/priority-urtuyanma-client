@@ -8,6 +8,7 @@ interface Laporan {
   id: number;
   nomorSurat: string;
   pengirim: string;
+  judul: string;
   tanggalInput: string;
   status: string;
 }
@@ -256,6 +257,7 @@ export default function LaporanPage() {
         id: item.id,
         nomorSurat: item.nomorSurat,
         pengirim: item.pengirimSurat,
+        judul: item.judulSurat,
         tanggalInput: new Date(item.tanggalInput).toISOString().split("T")[0],
         status: getStatusName(item.status),
       }));
@@ -396,6 +398,7 @@ export default function LaporanPage() {
               <th className="p-3">No</th>
               <th className="p-3 text-left">Nomor Surat</th>
               <th className="p-3 text-left">Pengirim</th>
+              <th className="p-3 text-left">Judul</th>
               <th className="p-3">Tanggal Input</th>
               <th className="p-3">Status</th>
             </tr>
@@ -422,6 +425,7 @@ export default function LaporanPage() {
                   <td className="p-3">{item.nomorSurat}</td>
 
                   <td className="p-3">{item.pengirim}</td>
+                  <td className="p-3">{item.judul}</td>
 
                   <td className="p-3 text-center">{item.tanggalInput}</td>
 
@@ -458,6 +462,8 @@ export default function LaporanPage() {
                     <th className="p-2">No</th>
                     <th className="p-2">Nomor Surat</th>
                     <th className="p-2">Pengirim</th>
+                    <th className="p-2">Judul</th>
+
                     <th className="p-2">Tanggal Surat Masuk</th>
                     <th className="p-2">Status</th>
                   </tr>
@@ -471,6 +477,7 @@ export default function LaporanPage() {
                       <td className="p-2">{item.nomorSurat}</td>
 
                       <td className="p-2">{item.pengirim}</td>
+                      <td className="p-2">{item.judul}</td>
 
                       <td className="p-2 text-center">{item.tanggalInput}</td>
 
