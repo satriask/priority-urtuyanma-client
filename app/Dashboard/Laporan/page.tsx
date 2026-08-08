@@ -98,12 +98,13 @@ export default function LaporanPage() {
     autoTable(doc, {
       startY: 44,
 
-      head: [["No", "Nomor Surat", "Pengirim", "Tanggal", "Status"]],
+      head: [["No", "Nomor Surat", "Pengirim", "Judul", "Tanggal", "Status"]],
 
       body: filteredData.map((item, index) => [
         String(index + 1),
         item.nomorSurat,
         item.pengirim,
+        item.judul,
         item.tanggalInput,
         item.status,
       ]),
