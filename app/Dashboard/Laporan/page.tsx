@@ -12,14 +12,6 @@ interface Laporan {
   status: string;
 }
 
-interface Laporan3 {
-  id: number;
-  nomorSurat: string;
-  pengirim: string;
-  tanggalInput: string;
-  status: string;
-}
-
 const getNamaBulan = (bulan: string | number): string => {
   const daftarBulan = [
     "Januari",
@@ -263,7 +255,7 @@ export default function LaporanPage() {
       const data = result.data.map((item: any) => ({
         id: item.id,
         nomorSurat: item.nomorSurat,
-        pengirim: item.judulSurat,
+        pengirim: item.pengirimSurat,
         tanggalInput: new Date(item.tanggalInput).toISOString().split("T")[0],
         status: getStatusName(item.status),
       }));
